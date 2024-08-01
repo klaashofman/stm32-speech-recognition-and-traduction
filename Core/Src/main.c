@@ -159,7 +159,7 @@ char usart_buffer[50];
 int usart_buffer_length = 0;
 
 /* Control words display */
-uint8_t display_words_enabled = 0;
+uint8_t display_words_enabled = 1;
 
 /* Check if the words can be printed */
 uint8_t print_words = 1;
@@ -396,6 +396,7 @@ void recognize_commands(const char *word) {
 	}
 }
 
+
 /* USER CODE END 0 */
 
 /**
@@ -478,6 +479,9 @@ int main(void) {
 	MX_I2C1_Init();
 	MX_SPI1_Init();
 	/* USER CODE BEGIN 2 */
+	usart_buffer_length = sprintf(usart_buffer,
+					"Starting up voice recognition app\r\n");
+	HAL_UART_Transmit(&huart2, (uint8_t*) usart_buffer, usart_buffer_length, 100);
 
 	/* Create an instance of the neural network */
 	ai_err = ai_speech_commands_model_create(&speech_commands_model,
@@ -507,7 +511,12 @@ int main(void) {
 	/* USER CODE BEGIN WHILE */
 	while (1) {
 		stop_mode();
-
+#if 1
+		usart_buffer_length = sprintf(usart_buffer,
+							"Start Sampling...\r\n");
+		HAL_UART_Transmit(&huart2, (uint8_t*) usart_buffer,
+				usart_buffer_length, 100);
+#endif
 		execution_time_start(0);
 		/* Acquire audio signal and transform it to PCM data */
 		audio_record();
@@ -517,6 +526,13 @@ int main(void) {
 		/* Preprocess audio signal to get the MFCCs */
 		preprocess_audio((int16_t*) &pcm_buffer[0], (ai_float*) &in_data[0],
 		PCM_BUFFER_SIZE);
+#if 1
+		usart_buffer_length = sprintf(usart_buffer,
+							"...Sampling Buffer Full\r\n");
+		HAL_UART_Transmit(&huart2, (uint8_t*) usart_buffer,
+				usart_buffer_length, 100);
+#endif
+
 		execution_time_stop(1);
 
 		execution_time_start(2);
